@@ -8,6 +8,14 @@ const jwt = require("jsonwebtoken");
 const app = express();
 const port = process.env.PORT || 5000;
 
+// middleware
+app.use(cors({
+  origin: [
+      'http://localhost:3000'
+  ],
+  credentials: true
+}));
+
 // Middleware
 app.use(cors());
 app.use(express.json());
@@ -27,6 +35,7 @@ async function run() {
 
     const db = client.db("authentication");
     const collection = db.collection("users");
+    const BlogsCollection = db.collection("blogs");
 
     // User Registration
     app.post("/api/v1/register", async (req, res) => {
@@ -89,6 +98,59 @@ async function run() {
         accessToken: token,
       });
     });
+
+    // blogs section
+
+
+    app.post("/api/v1/blogs", async (req, res) => {
+      try {
+        const { title, content, author, tags, views } = req.body;
+    
+        // Validate required fields
+        if (!title || !content || !author) {
+          return res.status(400).json({ message: "Title, Content, and Author are required!" });
+        }
+    
+        // Create a new blog post object
+        const newBlog = {
+          title,
+          content,
+          author,
+          tags,
+          views,
+          createdAt: new Date(),  
+        };
+    
+        // Insert the new blog into the 'blogs' collection
+        const result = await BlogsCollection.insertOne(newBlog);
+    
+        // Check if the insertion was successful
+        if (result) {
+          res.status(201).json({
+            message: "Blog created successfully!",
+            blog: newBlog,
+          });
+        } else {
+          res.status(500).json({ message: "Failed to create blog" });
+        }
+      } catch (error) {
+        console.error(error.message);
+        res.status(500).json({ message: "Server error" });
+      }
+    });
+    
+
+    // Fetch all blog posts
+app.get("/api/v1/blogs", async (req, res) => {
+  try {
+    const blogs = await BlogsCollection.find({}).toArray();
+    res.status(200).json(blogs);
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
 
     // Start the server
     app.listen(port, () => {

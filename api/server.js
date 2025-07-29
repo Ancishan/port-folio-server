@@ -8,10 +8,9 @@ const jwt = require("jsonwebtoken");
 const app = express();
 const port = process.env.PORT || 5000;
 
-// middleware
 app.use(cors({
   origin: [
-      'http://localhost:3000'
+   ' https://my-port-folio-nine-inky.vercel.app', 'http://localhost:3000'
   ],
   credentials: true
 }));
@@ -104,20 +103,21 @@ async function run() {
 
     app.post("/api/v1/blogs", async (req, res) => {
       try {
-        const { title, content, author, tags, views } = req.body;
+        const { title, description,blog_image, author_name,publish_date, total_likes} = req.body;
     
         // Validate required fields
-        if (!title || !content || !author) {
+        if (!title || !description|| !author_name) {
           return res.status(400).json({ message: "Title, Content, and Author are required!" });
         }
     
         // Create a new blog post object
         const newBlog = {
           title,
-          content,
-          author,
-          tags,
-          views,
+          blog_image,
+          description,
+          author_name,
+          publish_date,
+          total_likes,
           createdAt: new Date(),  
         };
     
